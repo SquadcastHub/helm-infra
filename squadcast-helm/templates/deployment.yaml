@@ -4,6 +4,7 @@ metadata:
   name: {{ include "squadcast-helm.fullname" . }}
   labels:
     {{- include "squadcast-helm.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace | default "default" | quote }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
@@ -20,10 +21,10 @@ spec:
       labels:
         {{- include "squadcast-helm.selectorLabels" . | nindent 8 }}
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      # {{- with .Values.imagePullSecrets }}
+      # imagePullSecrets:
+      #   {{- toYaml . | nindent 8 }}
+      # {{- end }}
       serviceAccountName: {{ include "squadcast-helm.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}

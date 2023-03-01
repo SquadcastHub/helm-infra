@@ -1,0 +1,124 @@
+# Default values for helm-infra.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+namespace: test-vaibhav
+image:
+  repository: gcr.io/sq-stage-94587/batman
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+# imagePullSecrets: {}
+
+nameOverride: ""
+fullnameOverride: "batman"
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+env:
+  - name: AWS_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: mysecret
+        key: AWS_ACCESS_KEY
+  - name: AWS_SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        name: mysecret
+        key: AWS_SECRET_KEY
+  # AWS secret manager ID
+  - name: AWS_SECRET_MANAGER_ID
+    value: batmantest
+  # All non sensitive secrets can be passed here
+  - name: VERSION
+    value: itsLatest
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    certmanager.k8s.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/tls-acme: "true"
+    nginx.org/server-snippets: "gzip on;"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: PUT, GET, POST,
+           OPTIONS, DELETE, PATCH
+    nginx.ingress.kubernetes.io/enable-cors: "false"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # nginx.ingress.kubernetes.io/cors-allow-origin: "https://app.squadcast.tech"
+  hosts:
+    - host: api-uat11.squadcast.tech
+      paths:
+        - pathType: Prefix
+          path: /v3/.*
+          backend:
+            service:
+              name: batman
+              port:
+                number: 80
+  tls:
+   - secretName: squadcast-prod-gateway-tls
+     hosts:
+       - api-uat11.squadcast.tech
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+
+livenessProbe:
+  enabled: false
+  initialDelaySeconds: 1
+  periodSeconds: 10
+  timeoutSeconds: null
+  failureThreshold: null
+  successThreshold: null
+
+readinessProbe:
+  enabled: false
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: null
+  failureThreshold: null
+  successThreshold: null
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
