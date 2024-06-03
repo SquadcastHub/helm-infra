@@ -4,7 +4,7 @@ kind: ServiceMonitor
 metadata:
   labels:
     team: SRE
-  name: batman-metrics
+  name:  {{ include "squadcast-helm.fullname" . }}-metrics
 spec:
   endpoints:
   - interval: 1m
