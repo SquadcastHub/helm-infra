@@ -1,0 +1,15 @@
+{{- if ((.Values.serviceMonitor)).enabled | default false }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    team: SRE
+  name: batman-metrics
+spec:
+  endpoints:
+  - interval: 1m
+    port: metrics
+  selector:
+    matchLabels:
+      {{- include "squadcast-helm.selectorLabels" . | nindent 4 }}
+{{- end  }}
